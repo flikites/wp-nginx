@@ -15,7 +15,8 @@ RUN { \
 RUN apt-get update
 RUN apt-get install -y --no-install-recommends nginx
 COPY ./default.conf /etc/nginx/conf.d/
+COPY --chmod=777 ./bootstrap.sh /
 
 EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+WORKDIR "/var/www/html"
+CMD ["/bootstrap.sh"]
