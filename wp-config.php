@@ -144,8 +144,8 @@ define( 'WP_AUTO_UPDATE_CORE', false );
 define('DISABLE_WP_CRON',true);
 define( 'WP_MEMORY_LIMIT', '1024M' );
 
-// define( 'WP_DEBUG', true);
-// define( 'WP_DEBUG_LOG', true );
+define( 'WP_DEBUG', true);
+define( 'WP_DEBUG_LOG', true );
 /* That's all, stop editing! Happy publishing. */
 
 /** Absolute path to the WordPress directory. */
