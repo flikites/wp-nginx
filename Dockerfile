@@ -219,11 +219,6 @@ RUN { \
 		echo 'html_errors = Off'; \
 	} > /usr/local/etc/php/conf.d/error-logging.ini
 
-# Copy the Nginx configuration file into the container at /etc/nginx/nginx.conf
-COPY nginx.conf /etc/nginx/nginx.conf
-
-
-
 # Download and install WordPress
 RUN curl -o wordpress.tar.gz https://wordpress.org/latest.tar.gz && \
     tar -xzvf wordpress.tar.gz && \
@@ -249,13 +244,14 @@ RUN curl -o wordpress.tar.gz https://wordpress.org/latest.tar.gz && \
     find /var/www/html/ -type d -exec chmod 755 {} \; && \
     find /var/www/html/ -type f -exec chmod 644 {} \;
 
+# Copy the Nginx configuration file into the container at /etc/nginx/nginx.conf
+COPY nginx.conf /etc/nginx/nginx.conf
 # Add wordpress config and database env
 COPY wp-config.php /var/www/html/wp-config.php
 ENV WORDPRESS_DB_USER=root
-ENV WORDPRESS_DB_PASSWORD=123secret
 ENV WORDPRESS_DB_NAME=test_db
 # Expose port 80 for Nginx
 EXPOSE 80
 ENTRYPOINT ["/docker-entrypoint.sh"]
 # Start PHP-FPM and Nginx servers
-CMD php-fpm & nginx -g "daemon off;"
+CMD php-fpm & nginx -g "daemon off;" -c "/etc/nginx/nginx.conf"
