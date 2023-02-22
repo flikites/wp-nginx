@@ -46,7 +46,3 @@ fi
 
 exec "$@"
 
-# configure hosts for send mail
-set -euo pipefail
-echo "127.0.0.1 $(hostname) localhost localhost.localdomain" >> /etc/hosts
-service sendmail restart

@@ -1,5 +1,5 @@
 # Use an official Nginx runtime as a parent image
-FROM php:8.1.16-fpm-bullseye
+FROM wordpress:fpm
 
 
 #install nginx
@@ -107,75 +107,7 @@ COPY 30-tune-worker-processes.sh /docker-entrypoint.d
 # Set the working directory to /var/www/html
 WORKDIR /var/www/html
 
-# persistent dependencies
-RUN set -eux; \
-	apt-get update; \
-	apt-get install -y --no-install-recommends \
-# Ghostscript is required for rendering PDF previews
-		ghostscript \
-	; \
-	rm -rf /var/lib/apt/lists/*
 
-# install the PHP extensions we need (https://make.wordpress.org/hosting/handbook/handbook/server-environment/#php-extensions)
-RUN set -ex; \
-	\
-	savedAptMark="$(apt-mark showmanual)"; \
-	\
-	apt-get update; \
-	apt-get install -y --no-install-recommends \
-		libfreetype6-dev \
-		libicu-dev \
-		libjpeg-dev \
-		libmagickwand-dev \
-		libpng-dev \
-		libwebp-dev \
-		libzip-dev \
-	; \
-	\
-	docker-php-ext-configure gd \
-		--with-freetype \
-		--with-jpeg \
-		--with-webp \
-	; \
-	docker-php-ext-install -j "$(nproc)" \
-		bcmath \
-		exif \
-		gd \
-		intl \
-		mysqli \
-		zip \
-	; \
-# https://pecl.php.net/package/imagick
-	pecl install imagick-3.6.0; \
-	docker-php-ext-enable imagick; \
-	rm -r /tmp/pear; \
-	\
-# some misbehaving extensions end up outputting to stdout 🙈 (https://github.com/docker-library/wordpress/issues/669#issuecomment-993945967)
-	out="$(php -r 'exit(0);')"; \
-	[ -z "$out" ]; \
-	err="$(php -r 'exit(0);' 3>&1 1>&2 2>&3)"; \
-	[ -z "$err" ]; \
-	\
-	extDir="$(php -r 'echo ini_get("extension_dir");')"; \
-	[ -d "$extDir" ]; \
-# reset apt-mark's "manual" list so that "purge --auto-remove" will remove all build dependencies
-	apt-mark auto '.*' > /dev/null; \
-	apt-mark manual $savedAptMark; \
-	ldd "$extDir"/*.so \
-		| awk '/=>/ { print $3 }' \
-		| sort -u \
-		| xargs -r dpkg-query -S \
-		| cut -d: -f1 \
-		| sort -u \
-		| xargs -rt apt-mark manual; \
-	\
-	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
-	rm -rf /var/lib/apt/lists/*; \
-	\
-	! { ldd "$extDir"/*.so | grep 'not found'; }; \
-# check for output like "PHP Warning:  PHP Startup: Unable to load dynamic library 'foo' (tried: ...)
-	err="$(php --version 3>&1 1>&2 2>&3)"; \
-	[ -z "$err" ]
 
 # set recommended PHP.ini settings
 # see https://secure.php.net/manual/en/opcache.installation.php
@@ -194,62 +126,22 @@ RUN { \
 	} > /usr/local/etc/php/conf.d/extra.ini
 
 # Enable sendmail
-RUN \
+##RUN \
   #
   # Install sendmail
-    apt-get update \
- && apt-get install -y --no-install-recommends sendmail \
- && rm -rf /var/lib/apt/lists/* \
+ ##   apt-get update \
+ ##&& apt-get install -y --no-install-recommends sendmail \
+ ##&& rm -rf /var/lib/apt/lists/* \
   #
   # Configure php to use sendmail
- && echo "sendmail_path=sendmail -t -i" >> /usr/local/etc/php/conf.d/sendmail.ini
+ ##&& echo "sendmail_path=sendmail -t -i" >> /usr/local/etc/php/conf.d/sendmail.ini
 
-# https://wordpress.org/support/article/editing-wp-config-php/#configure-error-logging
-RUN { \
-# https://www.php.net/manual/en/errorfunc.constants.php
-# https://github.com/docker-library/wordpress/issues/420#issuecomment-517839670
-		echo 'error_reporting = E_ERROR | E_WARNING | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING | E_RECOVERABLE_ERROR'; \
-		echo 'display_errors = Off'; \
-		echo 'display_startup_errors = Off'; \
-		echo 'log_errors = On'; \
-		echo 'error_log = /dev/stderr'; \
-		echo 'log_errors_max_len = 1024'; \
-		echo 'ignore_repeated_errors = On'; \
-		echo 'ignore_repeated_source = Off'; \
-		echo 'html_errors = Off'; \
-	} > /usr/local/etc/php/conf.d/error-logging.ini
 
 # Download and install WordPress
-RUN set -eux; \
-	version='6.1.1'; \
-	sha1='80f0f829645dec07c68bcfe0a0a1e1d563992fcb'; \
-	\
-	curl -o wordpress.tar.gz -fL "https://wordpress.org/wordpress-$version.tar.gz"; \
-	echo "$sha1 *wordpress.tar.gz" | sha1sum -c -; \
-	\
-# upstream tarballs include ./wordpress/ so this gives us /usr/src/wordpress
-	tar -xzf wordpress.tar.gz -C /var/www/html/; \
-	rm wordpress.tar.gz; \
-	\
-# https://wordpress.org/support/article/htaccess/
-	[ ! -e /var/www/html/.htaccess ]; \
-	{ \
-		echo '# BEGIN WordPress'; \
-		echo ''; \
-		echo 'RewriteEngine On'; \
-		echo 'RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]'; \
-		echo 'RewriteBase /'; \
-		echo 'RewriteRule ^index\.php$ - [L]'; \
-		echo 'RewriteCond %{REQUEST_FILENAME} !-f'; \
-		echo 'RewriteCond %{REQUEST_FILENAME} !-d'; \
-		echo 'RewriteRule . /index.php [L]'; \
-		echo ''; \
-		echo '# END WordPress'; \
-	} > /var/www/html/.htaccess; \
-	\
-  mv wordpress/* . && \
-  rm -rf wordpress && \
-	chown -R www-data:www-data /var/www/html/; \
+RUN rm -rf /var/www/html/*
+RUN mv /usr/src/wordpress/* /var/www/html/
+RUN \
+	chown -R www-data:www-data /var/www/html/ ;\
 	chmod -R 777 /var/www/html/wp-content
 
 # Copy the Nginx configuration file into the container at /etc/nginx/nginx.conf
@@ -263,4 +155,4 @@ EXPOSE 80
 RUN chmod +x /docker-entrypoint.sh
 ENTRYPOINT ["/docker-entrypoint.sh"]
 # Start PHP-FPM and Nginx servers
-CMD php-fpm & nginx -g "daemon off;" -c "/etc/nginx/nginx.conf"
+CMD php-fpm & service nginx start
