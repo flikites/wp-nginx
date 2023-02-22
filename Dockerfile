@@ -155,4 +155,4 @@ EXPOSE 80
 RUN chmod +x /docker-entrypoint.sh
 ENTRYPOINT ["/docker-entrypoint.sh"]
 # Start PHP-FPM and Nginx servers
-CMD php-fpm & service nginx start
+CMD php-fpm & nginx -g "daemon off;" -c "/etc/nginx/nginx.conf"
