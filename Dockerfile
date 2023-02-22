@@ -241,7 +241,7 @@ RUN curl -o wordpress.tar.gz https://wordpress.org/latest.tar.gz && \
 	} > /var/www/html/.htaccess; \
 	\
     chown -R www-data:www-data /var/www/html && \
-    find /var/www/html/ -type d -exec chmod 755 {} \; && \
+    find /var/www/html/ -type d -exec chmod 774 {} \; && \
     find /var/www/html/ -type f -exec chmod 644 {} \;
 
 # Copy the Nginx configuration file into the container at /etc/nginx/nginx.conf
