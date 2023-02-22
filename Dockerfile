@@ -252,6 +252,7 @@ ENV WORDPRESS_DB_USER=root
 ENV WORDPRESS_DB_NAME=test_db
 # Expose port 80 for Nginx
 EXPOSE 80
+RUN chmod +x /docker-entrypoint.sh
 ENTRYPOINT ["/docker-entrypoint.sh"]
 # Start PHP-FPM and Nginx servers
 CMD php-fpm & nginx -g "daemon off;" -c "/etc/nginx/nginx.conf"
