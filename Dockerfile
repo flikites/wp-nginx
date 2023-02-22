@@ -203,7 +203,7 @@ RUN \
   #
   # Configure php to use sendmail
  && echo "sendmail_path=sendmail -t -i" >> /usr/local/etc/php/conf.d/sendmail.ini
- 
+
 # https://wordpress.org/support/article/editing-wp-config-php/#configure-error-logging
 RUN { \
 # https://www.php.net/manual/en/errorfunc.constants.php
@@ -252,7 +252,7 @@ RUN curl -o wordpress.tar.gz https://wordpress.org/latest.tar.gz && \
 # Add wordpress config and database env
 COPY wp-config.php /var/www/html/wp-config.php
 ENV WORDPRESS_DB_USER=root
-ENV WORDPRESS_DB_PASSWORD=secret
+ENV WORDPRESS_DB_PASSWORD=123secret
 ENV WORDPRESS_DB_NAME=test_db
 # Expose port 80 for Nginx
 EXPOSE 80
