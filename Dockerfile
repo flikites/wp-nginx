@@ -220,12 +220,19 @@ RUN { \
 	} > /usr/local/etc/php/conf.d/error-logging.ini
 
 # Download and install WordPress
-RUN curl -o wordpress.tar.gz https://wordpress.org/latest.tar.gz && \
-    tar -xzvf wordpress.tar.gz && \
-    rm -f wordpress.tar.gz && \
-    mv wordpress/* . && \
-    rm -rf wordpress && \
-    [ ! -e /var/www/html/.htaccess ]; \
+RUN set -eux; \
+	version='6.1.1'; \
+	sha1='80f0f829645dec07c68bcfe0a0a1e1d563992fcb'; \
+	\
+	curl -o wordpress.tar.gz -fL "https://wordpress.org/wordpress-$version.tar.gz"; \
+	echo "$sha1 *wordpress.tar.gz" | sha1sum -c -; \
+	\
+# upstream tarballs include ./wordpress/ so this gives us /usr/src/wordpress
+	tar -xzf wordpress.tar.gz -C /var/www/html/; \
+	rm wordpress.tar.gz; \
+	\
+# https://wordpress.org/support/article/htaccess/
+	[ ! -e /var/www/html/.htaccess ]; \
 	{ \
 		echo '# BEGIN WordPress'; \
 		echo ''; \
@@ -240,15 +247,15 @@ RUN curl -o wordpress.tar.gz https://wordpress.org/latest.tar.gz && \
 		echo '# END WordPress'; \
 	} > /var/www/html/.htaccess; \
 	\
-    chown -R www-data:www-data /var/www/html && \
-    find /var/www/html/ -type d -exec chmod 755 {} \; && \
-    find /var/www/html/wp-content/ -type d -exec chmod 777 {} \; && \
-    find /var/www/html/ -type f -exec chmod 644 {} \;
+  mv wordpress/* . && \
+  rm -rf wordpress && \
+	chown -R www-data:www-data /var/www/html/; \
+	chmod -R 777 /var/www/html/wp-content
 
 # Copy the Nginx configuration file into the container at /etc/nginx/nginx.conf
 COPY nginx.conf /etc/nginx/nginx.conf
 # Add wordpress config and database env
-COPY wp-config.php /var/www/html/wp-config.php
+COPY --chown=www-data:www-data wp-config.php /var/www/html/wp-config.php
 ENV WORDPRESS_DB_USER=root
 ENV WORDPRESS_DB_NAME=test_db
 # Expose port 80 for Nginx
