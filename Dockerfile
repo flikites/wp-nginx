@@ -98,10 +98,10 @@ RUN set -x \
 # create a docker-entrypoint.d directory
     && mkdir /docker-entrypoint.d
 
-COPY docker-entrypoint.sh /
-COPY 10-listen-on-ipv6-by-default.sh /docker-entrypoint.d
-COPY 20-envsubst-on-templates.sh /docker-entrypoint.d
-COPY 30-tune-worker-processes.sh /docker-entrypoint.d
+##COPY docker-entrypoint.sh /
+##COPY 10-listen-on-ipv6-by-default.sh /docker-entrypoint.d
+##COPY 20-envsubst-on-templates.sh /docker-entrypoint.d
+##COPY 30-tune-worker-processes.sh /docker-entrypoint.d
 
 
 # Set the working directory to /var/www/html
@@ -138,21 +138,26 @@ RUN { \
 
 
 # Download and install WordPress
-RUN rm -rf /var/www/html/*
-RUN mv /usr/src/wordpress/* /var/www/html/
+##RUN rm -rf /var/www/html/*
+##RUN mv /usr/src/wordpress/* /var/www/html/
 RUN \
-	chown -R www-data:www-data /var/www/html/ ;\
+	chown -R www-data:www-data /var/www/html/wp-content ;\
 	chmod -R 777 /var/www/html/wp-content
 
 # Copy the Nginx configuration file into the container at /etc/nginx/nginx.conf
 COPY nginx.conf /etc/nginx/nginx.conf
 # Add wordpress config and database env
 COPY --chown=www-data:www-data wp-config.php /var/www/html/wp-config.php
+COPY --chown=www-data:www-data wp-config.php /var/www/html/wp-config.php
+COPY docker-entrypoint.sh /usr/local/docker-entrypoint.sh
 ENV WORDPRESS_DB_USER=root
 ENV WORDPRESS_DB_NAME=test_db
+
+VOLUME /var/www/html
+
 # Expose port 80 for Nginx
 EXPOSE 80
-RUN chmod +x /docker-entrypoint.sh
-ENTRYPOINT ["/docker-entrypoint.sh"]
+RUN chmod +x /usr/local/docker-entrypoint.sh
+ENTRYPOINT ["/usr/local/docker-entrypoint.sh"]
 # Start PHP-FPM and Nginx servers
 CMD php-fpm & nginx -g "daemon off;" -c "/etc/nginx/nginx.conf"

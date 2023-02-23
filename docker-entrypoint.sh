@@ -1,48 +1,35 @@
-#!/bin/sh
-# vim:sw=4:ts=4:et
+#!/usr/bin/env bash
+set -Eeuo pipefail
 
-set -e
+echo >&2 "running entrypoint $1 and $PWD";
 
-entrypoint_log() {
-    if [ -z "${NGINX_ENTRYPOINT_QUIET_LOGS:-}" ]; then
-        echo "$@"
-    fi
-}
+    sourceTarArgs=(
+			--create
+			--file -
+			--directory /usr/src/wordpress
+			--owner "www-data" --group "www-data"
+		)
+		targetTarArgs=(
+			--extract
+			--file -
+		)
 
-if [ "$1" = "nginx" -o "$1" = "nginx-debug" ]; then
-    if /usr/bin/find "/docker-entrypoint.d/" -mindepth 1 -maxdepth 1 -type f -print -quit 2>/dev/null | read v; then
-        entrypoint_log "$0: /docker-entrypoint.d/ is not empty, will attempt to perform configuration"
+		# loop over "pluggable" content in the source, and if it already exists in the destination, skip it
+		# https://github.com/docker-library/wordpress/issues/506 ("wp-content" persisted, "akismet" updated, WordPress container restarted/recreated, "akismet" downgraded)
+		for contentPath in \
+			/usr/src/wordpress/.htaccess \
+			/usr/src/wordpress/wp-content/*/*/ \
+		; do
+			contentPath="${contentPath%/}"
+			[ -e "$contentPath" ] || continue
+			contentPath="${contentPath#/usr/src/wordpress/}" # "wp-content/plugins/akismet", etc.
+			if [ -e "$PWD/$contentPath" ]; then
+				echo >&2 "WARNING: '$PWD/$contentPath' exists! (not copying the WordPress version)"
+				sourceTarArgs+=( --exclude "./$contentPath" )
+			fi
+		done
+		tar "${sourceTarArgs[@]}" . | tar "${targetTarArgs[@]}"
+		echo >&2 "Complete! WordPress has been successfully copied to $PWD"
 
-        entrypoint_log "$0: Looking for shell scripts in /docker-entrypoint.d/"
-        find "/docker-entrypoint.d/" -follow -type f -print | sort -V | while read -r f; do
-            case "$f" in
-                *.envsh)
-                    if [ -x "$f" ]; then
-                        entrypoint_log "$0: Sourcing $f";
-                        . "$f"
-                    else
-                        # warn on shell scripts without exec bit
-                        entrypoint_log "$0: Ignoring $f, not executable";
-                    fi
-                    ;;
-                *.sh)
-                    if [ -x "$f" ]; then
-                        entrypoint_log "$0: Launching $f";
-                        "$f"
-                    else
-                        # warn on shell scripts without exec bit
-                        entrypoint_log "$0: Ignoring $f, not executable";
-                    fi
-                    ;;
-                *) entrypoint_log "$0: Ignoring $f";;
-            esac
-        done
-
-        entrypoint_log "$0: Configuration complete; ready for start up"
-    else
-        entrypoint_log "$0: No files found in /docker-entrypoint.d/, skipping configuration"
-    fi
-fi
 
 exec "$@"
-
