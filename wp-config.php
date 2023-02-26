@@ -123,29 +123,19 @@ define( 'WP_DEBUG', !!getenv_docker('WORDPRESS_DEBUG', '') );
    define( 'WP_SITEURL', 'http://' . $_SERVER['HTTP_HOST'] . '/' );
  }
 
-/**
- * Handle potential reverse proxy headers. Ref:
- *  - https://wordpress.org/support/article/faq-installation/#how-can-i-get-wordpress-working-when-im-behind-a-reverse-proxy
- *  - https://wordpress.org/support/article/administration-over-ssl/#using-a-reverse-proxy
- */
-# if (isset($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
-#  $_SERVER['HTTPS'] = 'on';
-# } 
 
 // (we include this by default because reverse proxying is extremely common in container environments)
 
 if ($configExtra = getenv_docker('WORDPRESS_CONFIG_EXTRA', '')) {
 	// eval($configExtra);
 }
-# $_SERVER['HTTPS'] = 'on';
-# define( 'WP_HOME', 'http://' . $_SERVER['HTTP_HOST'] . '/' );
-# define( 'WP_SITEURL', 'http://' . $_SERVER['HTTP_HOST'] . '/' );
+
 define( 'WP_AUTO_UPDATE_CORE', false );
 define('DISABLE_WP_CRON',true);
 define( 'WP_MEMORY_LIMIT', '1024M' );
 
-define( 'WP_DEBUG', true);
-define( 'WP_DEBUG_LOG', true );
+# define( 'WP_DEBUG', true);
+# define( 'WP_DEBUG_LOG', true );
 /* That's all, stop editing! Happy publishing. */
 
 /** Absolute path to the WordPress directory. */
