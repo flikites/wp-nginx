@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-echo >&2 "running entrypoint $1 and $PWD";
-
 sourceTarArgs=(
   --create
   --file -
