@@ -118,6 +118,14 @@ RUN { \
     echo 'post_max_size = 256M'; \
 	} > /usr/local/etc/php/conf.d/extra.ini
 
+  # PHP-FPM configs
+RUN { \
+    echo '[global]'; \
+    echo 'emergency_restart_threshold=3'; \
+    echo 'emergency_restart_interval=1m'; \
+    echo 'process_control_timeout=5s'; \
+	} > /usr/local/etc/php-fpm.d/zz-extra.conf
+
 # Enable sendmail
 ## RUN \
   #
@@ -152,4 +160,4 @@ EXPOSE 80
 
 ENTRYPOINT ["/usr/local/docker-entrypoint.sh"]
 # Start PHP-FPM and Nginx servers
-CMD php-fpm & nginx -g "daemon off;" -c "/etc/nginx/nginx.conf"
+CMD php-fpm -y "/usr/local/etc/php-fpm.conf" & nginx -g "daemon off;" -c "/etc/nginx/nginx.conf"
