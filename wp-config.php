@@ -116,13 +116,14 @@ define( 'WP_DEBUG', !!getenv_docker('WORDPRESS_DEBUG', '') );
 
 // If we're behind a proxy server and using HTTPS, we need to alert WordPress of that fact
 // see also https://wordpress.org/support/article/administration-over-ssl/#using-a-reverse-proxy
- if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strpos($_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false) {
-	 $_SERVER['HTTPS'] = 'on';
- } else {
-   define( 'WP_HOME', 'http://' . $_SERVER['HTTP_HOST'] . '/' );
-   define( 'WP_SITEURL', 'http://' . $_SERVER['HTTP_HOST'] . '/' );
- }
-
+if (!empty($_SERVER['HTTP_HOST'])) {
+  if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strpos($_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false) {
+    $_SERVER['HTTPS'] = 'on';
+  } else {
+    define( 'WP_HOME', 'http://' . $_SERVER['HTTP_HOST'] . '/' );
+    define( 'WP_SITEURL', 'http://' . $_SERVER['HTTP_HOST'] . '/' );
+  }
+}
 
 // (we include this by default because reverse proxying is extremely common in container environments)
 
@@ -145,3 +146,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /** Sets up WordPress vars and included files. */
 require_once ABSPATH . 'wp-settings.php';
+
+if (empty($_SERVER['HTTP_HOST'])) {
+  // request comming from FDM health check
+    echo 'OK';
+    exit(0);
+}
