@@ -123,7 +123,7 @@ RUN { \
     echo '[global]'; \
     echo 'emergency_restart_threshold=3'; \
     echo 'emergency_restart_interval=1m'; \
-    echo 'process_control_timeout=60s'; \
+    echo 'process_control_timeout=5s'; \
 	} > /usr/local/etc/php-fpm.d/zz-extra.conf
 
 # Enable sendmail
