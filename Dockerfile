@@ -124,7 +124,7 @@ RUN { \
     echo 'emergency_restart_threshold=3'; \
     echo 'emergency_restart_interval=1m'; \
     echo 'process_control_timeout=5s'; \
-	} > /usr/local/etc/php-fpm.d/zz-extra.conf
+	} > /usr/local/etc/php-fpm.d/zzz-extra.conf
 
 # Enable sendmail
 ## RUN \
@@ -152,12 +152,14 @@ ENV WORDPRESS_DB_NAME=test_db
 # Add wordpress entrypoint
 COPY docker-entrypoint.sh /usr/local/docker-entrypoint.sh
 RUN chmod +x /usr/local/docker-entrypoint.sh
+# Add php-fpm service
+COPY php-fpm.sh /usr/local/php-fpm.sh
+RUN chmod +x /usr/local/php-fpm.sh
 
 VOLUME /var/www/html
-
 # Expose port 80 for Nginx
 EXPOSE 80
 
 ENTRYPOINT ["/usr/local/docker-entrypoint.sh"]
 # Start PHP-FPM and Nginx servers
-CMD php-fpm -y "/usr/local/etc/php-fpm.conf" & nginx -g "daemon off;" -c "/etc/nginx/nginx.conf"
+CMD /usr/local/php-fpm.sh & nginx -g "daemon off;" -c "/etc/nginx/nginx.conf"
