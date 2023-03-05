@@ -111,7 +111,6 @@ $table_prefix = getenv_docker('WORDPRESS_TABLE_PREFIX', 'wp_');
  * @link https://wordpress.org/support/article/debugging-in-wordpress/
  */
 define( 'WP_DEBUG', !!getenv_docker('WORDPRESS_DEBUG', '') );
-
 /* Add any custom values between this line and the "stop editing" line. */
 
 // If we're behind a proxy server and using HTTPS, we need to alert WordPress of that fact
@@ -123,6 +122,18 @@ if (!empty($_SERVER['HTTP_HOST'])) {
     define( 'WP_HOME', 'http://' . $_SERVER['HTTP_HOST'] . '/' );
     define( 'WP_SITEURL', 'http://' . $_SERVER['HTTP_HOST'] . '/' );
   }
+} else {
+    // request comming from FDM health check, check DB connection
+    $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
+    if ($mysqli->connect_errno) {
+      header('HTTP/1.1 500 Internal Server Error');
+      echo 'Database connection failed: ' . $mysqli->connect_error;
+      exit(0);
+    } else {
+      echo 'OK';
+      $mysqli->close();
+      exit(0);
+    }
 }
 
 // (we include this by default because reverse proxying is extremely common in container environments)
@@ -147,8 +158,3 @@ if ( ! defined( 'ABSPATH' ) ) {
 /** Sets up WordPress vars and included files. */
 require_once ABSPATH . 'wp-settings.php';
 
-if (empty($_SERVER['HTTP_HOST'])) {
-  // request comming from FDM health check
-    echo 'OK';
-    exit(0);
-}
