@@ -116,6 +116,7 @@ RUN set -eux; \
 RUN { \
     echo 'upload_max_filesize = 256M'; \
     echo 'post_max_size = 256M'; \
+    echo 'memory_limit=256M'; \
 	} > /usr/local/etc/php/conf.d/extra.ini
 
   # PHP-FPM configs
@@ -126,17 +127,28 @@ RUN { \
     echo 'process_control_timeout=5s'; \
 	} > /usr/local/etc/php-fpm.d/zzz-extra.conf
 
-# Enable sendmail
-## RUN \
-  #
-  # Install sendmail
-##    apt-get update \
-## && apt-get install -y --no-install-recommends sendmail \
-## && rm -rf /var/lib/apt/lists/* \
-  #
-  # Configure php to use sendmail
-## && echo "sendmail_path=sendmail -t -i" >> /usr/local/etc/php/conf.d/sendmail.ini
+# Install OpenSSH server and SFTP server
+RUN apt-get update && \
+    apt-get install -y openssh-server openssh-sftp-server && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+# Configure SSH server
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+    sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config && \
+    sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/' /etc/ssh/sshd_config && \
+    sed -i 's/#AuthorizedKeysFile/AuthorizedKeysFile/' /etc/ssh/sshd_config && \
+    echo "Match Group sftp" >> /etc/ssh/sshd_config && \
+    echo "    ChrootDirectory /var/www/" >> /etc/ssh/sshd_config && \
+    echo "    X11Forwarding no" >> /etc/ssh/sshd_config && \
+    echo "    AllowTcpForwarding no" >> /etc/ssh/sshd_config && \
+    echo "    ForceCommand internal-sftp" >> /etc/ssh/sshd_config
+
+RUN mkdir -p /var/run/sshd && \
+    echo "mkdir -p /var/run/sshd" >> /etc/rc.local
+
+# Create a group for SFTP users and add www-data to it
+RUN usermod -a -G www-data root
 
 # Set permissions for wp-content folder
 RUN \
@@ -159,7 +171,9 @@ RUN chmod +x /usr/local/php-fpm.sh
 VOLUME /var/www/html
 # Expose port 80 for Nginx
 EXPOSE 80
+# Expose the SFTP server port
+EXPOSE 22/tcp
 
 ENTRYPOINT ["/usr/local/docker-entrypoint.sh"]
 # Start PHP-FPM and Nginx servers
-CMD /usr/local/php-fpm.sh & nginx -g "daemon off;" -c "/etc/nginx/nginx.conf"
+CMD /usr/local/php-fpm.sh & nginx -g "daemon off;" -c "/etc/nginx/nginx.conf" & /usr/sbin/sshd -D
