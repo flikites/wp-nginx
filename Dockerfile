@@ -172,7 +172,7 @@ VOLUME /var/www/html
 # Expose port 80 for Nginx
 EXPOSE 80
 # Expose the SFTP server port
-EXPOSE 22/tcp
+# EXPOSE 22/tcp
 
 ENTRYPOINT ["/usr/local/docker-entrypoint.sh"]
 # Start PHP-FPM and Nginx servers
