@@ -12,6 +12,15 @@ targetTarArgs=(
   --file -
 )
 
+#Remove akismet plugin
+folder="/usr/src/wordpress/wp-content/plugins/akismet"
+if [ -d "$folder" ]; then
+  # Delete the folder and its contents
+  rm -rf "$folder"
+  echo "Folder deleted: $folder"
+else
+  echo "Folder does not exist: $folder"
+fi
 # loop over "pluggable" content in the source, and if it already exists in the destination, skip it
 # https://github.com/docker-library/wordpress/issues/506 ("wp-content" persisted, "akismet" updated, WordPress container restarted/recreated, "akismet" downgraded)
 for contentPath in \
