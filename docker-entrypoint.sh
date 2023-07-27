@@ -52,6 +52,7 @@ chmod 700 /home/sftpuser/.ssh
 echo "$PUBLIC_KEY" > /home/sftpuser/.ssh/authorized_keys
 chown -R sftpuser:sftpuser /home/sftpuser/.ssh
 chmod 600 /home/sftpuser/.ssh/authorized_keys
+echo "Public key is: $PUBLIC_KEY"
 
 exec "$@"
 
