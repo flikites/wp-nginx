@@ -40,8 +40,13 @@ echo >&2 "Complete! WordPress has been successfully copied to $PWD"
 
 
 # Add a new user for SFTP access with key-based authentication
-useradd -m -d /home/sftpuser -s /sbin/nologin sftpuser 
-mkdir /home/sftpuser/.ssh
+USERNAME="sftpuser"
+if id "$USERNAME" &>/dev/null; then
+   echo "User $USERNAME already exists."
+else
+   useradd -m -d /home/sftpuser -s /sbin/nologin sftpuser
+   mkdir /home/sftpuser/.ssh
+fi
 chmod 700 /home/sftpuser/.ssh
 # Add the public key to the authorized keys file
 echo "$PUBLIC_KEY" > /home/sftpuser/.ssh/authorized_keys
