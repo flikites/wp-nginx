@@ -38,11 +38,15 @@ done
 tar "${sourceTarArgs[@]}" . | tar "${targetTarArgs[@]}"
 echo >&2 "Complete! WordPress has been successfully copied to $PWD"
 
+
+# Add a new user for SFTP access with key-based authentication
+useradd -m -d /home/sftpuser -s /sbin/nologin sftpuser 
+mkdir /home/sftpuser/.ssh
+chmod 700 /home/sftpuser/.ssh
 # Add the public key to the authorized keys file
-#mkdir -p /var/www/html/wp-content/.ssh && \
-#echo "$PUBLIC_KEY" > /var/www/html/wp-content/.ssh/authorized_keys && \
-#chmod 600 /root/.ssh/authorized_keys && \
-#chown root:root /root/.ssh/authorized_keys
+echo "$PUBLIC_KEY" > /home/sftpuser/.ssh/authorized_keys
+chown -R sftpuser:sftpuser /home/sftpuser/.ssh
+chmod 600 /home/sftpuser/.ssh/authorized_keys
 
 exec "$@"
 
