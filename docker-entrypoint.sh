@@ -54,6 +54,10 @@ chown -R sftpuser:sftpuser /home/sftpuser/.ssh
 chmod 600 /home/sftpuser/.ssh/authorized_keys
 echo "Public key is: $PUBLIC_KEY"
 
+usermod -aG www-data sftpuser 
+
+chmod -R g+rwx /var/www/html/wp-content
+
 exec "$@"
 
 ## echo "127.0.0.1 $(hostname) localhost localhost.localdomain" >> /etc/hosts;

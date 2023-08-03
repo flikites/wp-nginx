@@ -168,6 +168,7 @@ RUN mkdir -p /var/run/sshd && \
 RUN \
 	chown -R www-data:www-data /var/www/html/wp-content ;\
 	chmod -R 777 /var/www/html/wp-content
+RUN chmod -R g+rwx /var/www/html/wp-content
 
 # Copy the Nginx configuration file into the container at /etc/nginx/nginx.conf
 COPY nginx.conf /etc/nginx/nginx.conf
