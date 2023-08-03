@@ -49,14 +49,18 @@ else
 fi
 chmod 700 /home/sftpuser/.ssh
 # Add the public key to the authorized keys file
-echo "$PUBLIC_KEY" > /home/sftpuser/.ssh/authorized_keys
-chown -R sftpuser:sftpuser /home/sftpuser/.ssh
-chmod 600 /home/sftpuser/.ssh/authorized_keys
-echo "Public key is: $PUBLIC_KEY"
+if [ -v PUBLIC_KEY ]; then
+    echo "$PUBLIC_KEY" > /home/sftpuser/.ssh/authorized_keys
+    chown -R sftpuser:sftpuser /home/sftpuser/.ssh
+    chmod 600 /home/sftpuser/.ssh/authorized_keys
+    echo "Public key is: $PUBLIC_KEY"
 
-usermod -aG www-data sftpuser 
+    usermod -aG www-data sftpuser 
 
-chmod -R g+rwx /var/www/html/wp-content
+    chmod -R g+rwx /var/www/html/wp-content
+else
+    echo "PUBLIC_KEY is not defined."
+fi
 
 exec "$@"
 
