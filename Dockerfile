@@ -2,8 +2,8 @@ FROM wordpress:fpm
 
 # install nginx
 
-ENV NGINX_VERSION   1.24.0
-ENV NJS_VERSION     0.7.12
+ENV NGINX_VERSION   1.23.3
+ENV NJS_VERSION     0.7.9
 ENV PKG_RELEASE     1~bullseye
 
 RUN set -x \
@@ -14,19 +14,15 @@ RUN set -x \
     && apt-get install --no-install-recommends --no-install-suggests -y gnupg1 ca-certificates \
     && \
     NGINX_GPGKEY=573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62; \
-    NGINX_GPGKEY_PATH=/usr/share/keyrings/nginx-archive-keyring.gpg; \
-    export GNUPGHOME="$(mktemp -d)"; \
     found=''; \
     for server in \
         hkp://keyserver.ubuntu.com:80 \
         pgp.mit.edu \
     ; do \
         echo "Fetching GPG key $NGINX_GPGKEY from $server"; \
-        gpg1 --keyserver "$server" --keyserver-options timeout=10 --recv-keys "$NGINX_GPGKEY" && found=yes && break; \
+        apt-key adv --keyserver "$server" --keyserver-options timeout=10 --recv-keys "$NGINX_GPGKEY" && found=yes && break; \
     done; \
     test -z "$found" && echo >&2 "error: failed to fetch GPG key $NGINX_GPGKEY" && exit 1; \
-    gpg1 --export "$NGINX_GPGKEY" > "$NGINX_GPGKEY_PATH" ; \
-    rm -rf "$GNUPGHOME"; \
     apt-get remove --purge --auto-remove -y gnupg1 && rm -rf /var/lib/apt/lists/* \
     && dpkgArch="$(dpkg --print-architecture)" \
     && nginxPackages=" \
@@ -39,13 +35,13 @@ RUN set -x \
     && case "$dpkgArch" in \
         amd64|arm64) \
 # arches officialy built by upstream
-            echo "deb [signed-by=$NGINX_GPGKEY_PATH] https://nginx.org/packages/debian/ bullseye nginx" >> /etc/apt/sources.list.d/nginx.list \
+            echo "deb https://nginx.org/packages/mainline/debian/ bullseye nginx" >> /etc/apt/sources.list.d/nginx.list \
             && apt-get update \
             ;; \
         *) \
 # we're on an architecture upstream doesn't officially build for
 # let's build binaries from the published source packages
-            echo "deb-src [signed-by=$NGINX_GPGKEY_PATH] https://nginx.org/packages/debian/ bullseye nginx" >> /etc/apt/sources.list.d/nginx.list \
+            echo "deb-src https://nginx.org/packages/mainline/debian/ bullseye nginx" >> /etc/apt/sources.list.d/nginx.list \
             \
 # new directory for storing sources and .deb files
             && tempDir="$(mktemp -d)" \
@@ -120,7 +116,6 @@ RUN set -eux; \
 RUN { \
     echo 'upload_max_filesize = 256M'; \
     echo 'post_max_size = 256M'; \
-    echo 'memory_limit = 256M'; \
 	} > /usr/local/etc/php/conf.d/extra.ini
 
   # PHP-FPM configs
@@ -131,44 +126,22 @@ RUN { \
     echo 'process_control_timeout=5s'; \
 	} > /usr/local/etc/php-fpm.d/zzz-extra.conf
 
-# Install OpenSSH server and SFTP server
- RUN apt-get update && \
-   apt-get install -y openssh-server openssh-sftp-server && \
-   apt-get clean && \
-   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+# Enable sendmail
+## RUN \
+  #
+  # Install sendmail
+##    apt-get update \
+## && apt-get install -y --no-install-recommends sendmail \
+## && rm -rf /var/lib/apt/lists/* \
+  #
+  # Configure php to use sendmail
+## && echo "sendmail_path=sendmail -t -i" >> /usr/local/etc/php/conf.d/sendmail.ini
 
-# Configure SSH server for SFTP and key-based authentication
-#RUN mkdir /var/run/sshd \
-#    && sed -i 's/^#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config \
-#    && sed -i 's/#Port 22/Port 2222/' /etc/ssh/sshd_config \
-#    && sed -i 's/#AuthorizedKeysFile/AuthorizedKeysFile/' /etc/ssh/sshd_config \
-#    && sed -i 's/^Subsystem\s\+sftp\s\+\/usr\/lib\/openssh\/sftp-server/Subsystem sftp internal-sftp/' /etc/ssh/sshd_config \
-#    && echo 'Match User sftpuser\nChrootDirectory /var/www/%u\nForceCommand internal-sftp\nX11Forwarding no\nAllowTcpForwarding no' >> /etc/ssh/sshd_config
-
-
-#Configure SSH server
-RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
-    sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config && \
-    sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/' /etc/ssh/sshd_config && \
-    sed -i 's/#Port 22/Port 2222/' /etc/ssh/sshd_config && \
-    sed -i 's/#AuthorizedKeysFile/AuthorizedKeysFile/' /etc/ssh/sshd_config && \
-    echo "Match User sftpuser" >> /etc/ssh/sshd_config && \
-    echo "    ChrootDirectory /var/www/" >> /etc/ssh/sshd_config && \
-    echo "    X11Forwarding no" >> /etc/ssh/sshd_config && \
-    echo "    AllowTcpForwarding no" >> /etc/ssh/sshd_config && \
-    echo "    ForceCommand internal-sftp" >> /etc/ssh/sshd_config
-
-RUN mkdir -p /var/run/sshd && \
-    echo "mkdir -p /var/run/sshd" >> /etc/rc.local
-
-# Create a group for SFTP users and add www-data to it
-#RUN usermod -a -G www-data root
 
 # Set permissions for wp-content folder
 RUN \
 	chown -R www-data:www-data /var/www/html/wp-content ;\
 	chmod -R 777 /var/www/html/wp-content
-RUN chmod -R g+rwx /var/www/html/wp-content
 
 # Copy the Nginx configuration file into the container at /etc/nginx/nginx.conf
 COPY nginx.conf /etc/nginx/nginx.conf
@@ -186,9 +159,7 @@ RUN chmod +x /usr/local/php-fpm.sh
 VOLUME /var/www/html
 # Expose port 80 for Nginx
 EXPOSE 80
-# Expose the SFTP server port
-EXPOSE 2222/tcp
 
 ENTRYPOINT ["/usr/local/docker-entrypoint.sh"]
 # Start PHP-FPM and Nginx servers
-CMD /usr/local/php-fpm.sh & nginx -g "daemon off;" -c "/etc/nginx/nginx.conf" & /usr/sbin/sshd -D
+CMD /usr/local/php-fpm.sh & nginx -g "daemon off;" -c "/etc/nginx/nginx.conf"
