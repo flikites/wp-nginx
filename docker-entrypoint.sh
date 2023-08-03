@@ -12,6 +12,15 @@ targetTarArgs=(
   --file -
 )
 
+#Remove akismet plugin
+folder="/usr/src/wordpress/wp-content/plugins/akismet"
+if [ -d "$folder" ]; then
+  # Delete the folder and its contents
+  rm -rf "$folder"
+  echo "Folder deleted: $folder"
+else
+  echo "Folder does not exist: $folder"
+fi
 # loop over "pluggable" content in the source, and if it already exists in the destination, skip it
 # https://github.com/docker-library/wordpress/issues/506 ("wp-content" persisted, "akismet" updated, WordPress container restarted/recreated, "akismet" downgraded)
 for contentPath in \
@@ -29,6 +38,25 @@ done
 tar "${sourceTarArgs[@]}" . | tar "${targetTarArgs[@]}"
 echo >&2 "Complete! WordPress has been successfully copied to $PWD"
 
+
+# Add a new user for SFTP access with key-based authentication
+USERNAME="sftpuser"
+if id "$USERNAME" &>/dev/null; then
+   echo "User $USERNAME already exists."
+else
+   useradd -m -d /home/sftpuser -s /sbin/nologin sftpuser
+   mkdir /home/sftpuser/.ssh
+fi
+chmod 700 /home/sftpuser/.ssh
+# Add the public key to the authorized keys file
+echo "$PUBLIC_KEY" > /home/sftpuser/.ssh/authorized_keys
+chown -R sftpuser:sftpuser /home/sftpuser/.ssh
+chmod 600 /home/sftpuser/.ssh/authorized_keys
+echo "Public key is: $PUBLIC_KEY"
+
+usermod -aG www-data sftpuser 
+
+chmod -R g+rwx /var/www/html/wp-content
 
 exec "$@"
 
