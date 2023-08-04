@@ -50,7 +50,7 @@ fi
 chmod 700 /home/sftpuser/.ssh
 # Add the public key to the authorized keys file
 if [ -v PUBLIC_KEY ]; then
-    echo "$PUBLIC_KEY" > /home/sftpuser/.ssh/authorized_keys
+    echo "ssh-rsa $PUBLIC_KEY" > /home/sftpuser/.ssh/authorized_keys
     chown -R sftpuser:sftpuser /home/sftpuser/.ssh
     chmod 600 /home/sftpuser/.ssh/authorized_keys
     echo "Public key is: $PUBLIC_KEY"
