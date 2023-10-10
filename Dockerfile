@@ -1,5 +1,5 @@
 FROM wordpress:fpm
-
+# update to v.6.3.1
 # install nginx
 
 ENV NGINX_VERSION   1.24.0
@@ -122,6 +122,7 @@ RUN { \
     echo 'upload_max_filesize = 256M'; \
     echo 'post_max_size = 256M'; \
     echo 'memory_limit = 256M'; \
+    echo 'max_execution_time=300s'; \
 	} > /usr/local/etc/php/conf.d/extra.ini
 
   # PHP-FPM configs
@@ -130,6 +131,8 @@ RUN { \
     echo 'emergency_restart_threshold=3'; \
     echo 'emergency_restart_interval=1m'; \
     echo 'process_control_timeout=5s'; \
+    echo '[www]'; \
+    echo 'request_terminate_timeout=300s'; \
 	} > /usr/local/etc/php-fpm.d/zzz-extra.conf
 
 # Install OpenSSH server and SFTP server
