@@ -113,7 +113,7 @@ $table_prefix = getenv_docker('WORDPRESS_TABLE_PREFIX', 'wp_');
 define( 'WP_DEBUG', !!getenv_docker('WORDPRESS_DEBUG', '') );
 /* Add any custom values between this line and the "stop editing" line. */
 
-// request comming from FDM health check, check DB connection
+// Check DB connection
 $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
 $is_slave = true;
 if ($mysqli->connect_errno) {
