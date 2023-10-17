@@ -113,6 +113,17 @@ $table_prefix = getenv_docker('WORDPRESS_TABLE_PREFIX', 'wp_');
 define( 'WP_DEBUG', !!getenv_docker('WORDPRESS_DEBUG', '') );
 /* Add any custom values between this line and the "stop editing" line. */
 
+// request comming from FDM health check, check DB connection
+$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
+$is_slave = true;
+if ($mysqli->connect_errno) {
+  //Disable cron on slave nodes
+  define('DISABLE_WP_CRON',true);
+} else {
+  $is_slave = false;
+  $mysqli->close();
+}
+
 // If we're behind a proxy server and using HTTPS, we need to alert WordPress of that fact
 // see also https://wordpress.org/support/article/administration-over-ssl/#using-a-reverse-proxy
 if (!empty($_SERVER['HTTP_HOST'])) {
@@ -123,13 +134,10 @@ if (!empty($_SERVER['HTTP_HOST'])) {
     define( 'WP_SITEURL', 'http://' . $_SERVER['HTTP_HOST'] . '/' );
   }
 } else {
-    //Disable cron on slave nodes
-    define('DISABLE_WP_CRON',true);
-    // request comming from FDM health check, check DB connection
-    $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
-    if ($mysqli->connect_errno) {
+    // request comming from FDM health check, check if node is slave
+    if ($is_slave) {
       header('HTTP/1.1 500 Internal Server Error');
-      echo 'Database connection failed: ' . $mysqli->connect_error;
+      echo 'Database connection failed';
       exit(0);
     } else {
       echo 'OK';
