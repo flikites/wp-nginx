@@ -123,6 +123,8 @@ if (!empty($_SERVER['HTTP_HOST'])) {
     define( 'WP_SITEURL', 'http://' . $_SERVER['HTTP_HOST'] . '/' );
   }
 } else {
+    //Disable cron on slave nodes
+    define('DISABLE_WP_CRON',true);
     // request comming from FDM health check, check DB connection
     $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
     if ($mysqli->connect_errno) {
@@ -143,7 +145,6 @@ if ($configExtra = getenv_docker('WORDPRESS_CONFIG_EXTRA', '')) {
 }
 
 define( 'WP_AUTO_UPDATE_CORE', false );
-define('DISABLE_WP_CRON',true);
 define( 'WP_MEMORY_LIMIT', '1024M' );
 
 # define( 'WP_DEBUG', true);
