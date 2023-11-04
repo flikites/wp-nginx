@@ -23,7 +23,7 @@ jobs:
       - name: Build and push Docker images
         run: |
           mapfile -t json_array < <(jq -r '.[] | .name + " " + .tag' versions.json)          
-          for base_image in "${json_array[@]}"; do
+          for element in "${json_array[@]}"; do
             name=$(echo "$element" | cut -d ' ' -f 1)
             tag=$(echo "$element" | cut -d ' ' -f 2)
             echo "pushing >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> $name"
