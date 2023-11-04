@@ -22,9 +22,11 @@ jobs:
 
       - name: Build and push Docker images
         run: |
-          mapfile -t json_array < <(jq -r '.[]' versions.json)          
+          mapfile -t json_array < <(jq -r '.[] | .name + " " + .tag' versions.json)          
           for base_image in "${json_array[@]}"; do
-            echo "$base_image"
-            docker build -t runonflux/wp-nginx:$base_image --build-arg BASE_IMAGE=wordpress:$base_image .
-            docker push runonflux/wp-nginx:$base_image
+            name=$(echo "$element" | cut -d ' ' -f 1)
+            tag=$(echo "$element" | cut -d ' ' -f 2)
+            echo "pushing >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> $name"
+            docker build -t runonflux/wp-nginx:dev-$name --build-arg BASE_IMAGE=wordpress:$tag .
+            docker push runonflux/wp-nginx:dev-$name
           done
