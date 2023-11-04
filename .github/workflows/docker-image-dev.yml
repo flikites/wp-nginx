@@ -25,6 +25,6 @@ jobs:
           mapfile -t json_array < <(jq -r '.[]' versions.json)          
           for base_image in "${json_array[@]}"; do
             echo "$base_image"
-            docker build -t $DOCKER_USERNAME/runonflux/wp-nginx:$base_image --build-arg BASE_IMAGE=wordpress:$base_image .
+            docker build -t runonflux/wp-nginx:$base_image --build-arg BASE_IMAGE=wordpress:$base_image .
             docker push runonflux/wp-nginx:$base_image
           done
