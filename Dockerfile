@@ -1,4 +1,5 @@
-FROM wordpress:fpm
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
 # update to v.6.3.1
 # install nginx
 
