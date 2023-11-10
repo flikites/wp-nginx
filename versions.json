@@ -20,7 +20,7 @@
     "tag": "6.3-php8.0-fpm"
   },
   {
-    "name": "beta-6.4-RC3",
-    "tag": "beta-6.4-RC3-fpm"
+    "name": "6.4",
+    "tag": "6.4-fpm"
   }
 ]
