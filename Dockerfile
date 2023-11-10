@@ -1,4 +1,5 @@
-FROM wordpress:fpm
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
 # update to v.6.3.1
 # install nginx
 
@@ -160,7 +161,10 @@ RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/
     echo "    ChrootDirectory /var/www/" >> /etc/ssh/sshd_config && \
     echo "    X11Forwarding no" >> /etc/ssh/sshd_config && \
     echo "    AllowTcpForwarding no" >> /etc/ssh/sshd_config && \
-    echo "    ForceCommand internal-sftp" >> /etc/ssh/sshd_config
+    echo "    ForceCommand internal-sftp" >> /etc/ssh/sshd_config  && \
+    echo "Match User sshuser" >> /etc/ssh/sshd_config && \
+    echo "    X11Forwarding no" >> /etc/ssh/sshd_config && \
+    echo "    AllowTcpForwarding no" >> /etc/ssh/sshd_config
 
 RUN mkdir -p /var/run/sshd && \
     echo "mkdir -p /var/run/sshd" >> /etc/rc.local

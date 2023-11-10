@@ -1,29 +1,32 @@
-name: Docker Image CI
+name: Push Docker Hub Images
 
 on:
   push:
-    branches: [ "develop" ]
-  pull_request:
-    branches: [ "develop" ]
+    branches:
+      - develop
+
+env:
+  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
 jobs:
-
-  push_to_registry:
-    name: Push Docker image to Docker Hub
+  build-and-push:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Check out the repo
+      - name: Checkout repository
         uses: actions/checkout@v3
-      
-      - name: Log in to Docker Hub
-        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-    
-      - name: Build and push Docker image
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
-        with:
-          context: .
-          push: true
-          tags: runonflux/wp-nginx:dev
+
+      - name: Login to Docker Hub
+        run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+
+      - name: Build and push Docker images
+        run: |
+          mapfile -t json_array < <(jq -r '.[] | .name + " " + .tag' versions.json)          
+          for element in "${json_array[@]}"; do
+            name=$(echo "$element" | cut -d ' ' -f 1)
+            tag=$(echo "$element" | cut -d ' ' -f 2)
+            echo "pushing >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> $name"
+            docker build -t runonflux/wp-nginx:dev-$name --build-arg BASE_IMAGE=wordpress:$tag .
+            docker push runonflux/wp-nginx:dev-$name
+          done
