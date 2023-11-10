@@ -84,6 +84,7 @@ if [ -v PUBLIC_KEY ]; then
     usermod -aG root sshuser
 
     chmod -R g+rwx /var/www/html/wp-content
+    chown -R www-data:www-data /var/www/html/wp-content
 else
     echo "PUBLIC_KEY is not defined."
 fi
