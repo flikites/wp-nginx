@@ -22,5 +22,9 @@
   {
     "name": "6.4",
     "tag": "6.4-fpm"
+  },
+  {
+    "name": "latest-php8.2",
+    "tag": "php8.2-fpm"
   }
 ]
