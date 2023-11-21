@@ -8,23 +8,15 @@
     "tag": "6.3.2-fpm"
   },
   {
-    "name": "6.3.2-php8.0",
-    "tag": "6.3.2-php8.0-fpm"
-  },
-  {
     "name": "6.3",
     "tag": "6.3-fpm"
-  },
-  {
-    "name": "6.3-php8.0",
-    "tag": "6.3-php8.0-fpm"
   },
   {
     "name": "6.4",
     "tag": "6.4-fpm"
   },
   {
-    "name": "latest-php8.2",
-    "tag": "php8.2-fpm"
+    "name": "6.4.1",
+    "tag": "6.4.1-fpm"
   }
 ]
