@@ -160,10 +160,11 @@ RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/
     echo "    ChrootDirectory /var/www/" >> /etc/ssh/sshd_config && \
     echo "    X11Forwarding no" >> /etc/ssh/sshd_config && \
     echo "    AllowTcpForwarding no" >> /etc/ssh/sshd_config && \
-    echo "    ForceCommand internal-sftp" >> /etc/ssh/sshd_config  && \
-    echo "Match User sshuser" >> /etc/ssh/sshd_config && \
-    echo "    X11Forwarding no" >> /etc/ssh/sshd_config && \
-    echo "    AllowTcpForwarding no" >> /etc/ssh/sshd_config
+    echo "    ForceCommand internal-sftp" >> /etc/ssh/sshd_config
+
+RUN groupadd sshgroup && useradd -ms /bin/bash -g sshgroup sshuser
+RUN mkdir -p /home/sshuser/.ssh
+
 
 RUN mkdir -p /var/run/sshd && \
     echo "mkdir -p /var/run/sshd" >> /etc/rc.local
@@ -173,9 +174,9 @@ RUN mkdir -p /var/run/sshd && \
 
 # Set permissions for wp-content folder
 RUN \
-	chown -R www-data:www-data /var/www/html/wp-content ;\
-	chmod -R 777 /var/www/html/wp-content
-RUN chmod -R g+rwx /var/www/html/wp-content
+	chown -R www-data:www-data /var/www/html/ ;\
+	chmod -R 777 /var/www/html/
+RUN chmod -R g+rwx /var/www/html/
 
 # Copy the Nginx configuration file into the container at /etc/nginx/nginx.conf
 COPY nginx.conf /etc/nginx/nginx.conf
