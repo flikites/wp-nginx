@@ -103,7 +103,7 @@ RUN set -x \
 
 
 # Set the working directory to /var/www/html
-WORKDIR /var/www/html
+WORKDIR /var/www/
 
 
 
