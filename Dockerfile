@@ -191,7 +191,7 @@ RUN chmod +x /usr/local/docker-entrypoint.sh
 COPY php-fpm.sh /usr/local/php-fpm.sh
 RUN chmod +x /usr/local/php-fpm.sh
 
-VOLUME /var/www/html
+VOLUME /var/www/
 # Expose port 80 for Nginx
 EXPOSE 80
 # Expose the SFTP server port
