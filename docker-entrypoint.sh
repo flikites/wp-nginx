@@ -46,8 +46,13 @@ for contentPath in \
     sourceTarArgs+=( --exclude "./$contentPath" )
   fi
 done
-tar "${sourceTarArgs[@]}" . | tar "${targetTarArgs[@]}"
-echo >&2 "Complete! WordPress has been successfully copied to $PWD"
+if [ -d "/var/www/html/wp-admin" ]; then
+    echo "Wordpress already there skipping..."
+else
+    tar "${sourceTarArgs[@]}" . | tar "${targetTarArgs[@]}"
+    echo >&2 "Complete! WordPress has been successfully copied to $PWD"
+fi
+
 
 
 # Add a new user for SFTP access with key-based authentication
