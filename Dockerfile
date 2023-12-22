@@ -3,14 +3,14 @@ FROM ${BASE_IMAGE}
 # update to v.6.3.1
 # install nginx
 
-ENV NGINX_VERSION   1.24.0
-ENV NJS_VERSION     0.7.12
-ENV PKG_RELEASE     1~bullseye
+ENV NGINX_VERSION   1.25.3
+ENV NJS_VERSION     0.8.2
+ENV PKG_RELEASE     1~bookworm
 
 RUN set -x \
 # create nginx user/group first, to be consistent throughout docker variants
-    && addgroup --system --gid 101 nginx \
-    && adduser --system --disabled-login --ingroup nginx --no-create-home --home /nonexistent --gecos "nginx user" --shell /bin/false --uid 101 nginx \
+    && groupadd --system --gid 101 nginx \
+    && useradd --system --gid nginx --no-create-home --home /nonexistent --comment "nginx user" --shell /bin/false --uid 101 nginx \
     && apt-get update \
     && apt-get install --no-install-recommends --no-install-suggests -y gnupg1 ca-certificates \
     && \
@@ -40,13 +40,13 @@ RUN set -x \
     && case "$dpkgArch" in \
         amd64|arm64) \
 # arches officialy built by upstream
-            echo "deb [signed-by=$NGINX_GPGKEY_PATH] https://nginx.org/packages/debian/ bullseye nginx" >> /etc/apt/sources.list.d/nginx.list \
+            echo "deb [signed-by=$NGINX_GPGKEY_PATH] https://nginx.org/packages/mainline/debian/ bookworm nginx" >> /etc/apt/sources.list.d/nginx.list \
             && apt-get update \
             ;; \
         *) \
 # we're on an architecture upstream doesn't officially build for
 # let's build binaries from the published source packages
-            echo "deb-src [signed-by=$NGINX_GPGKEY_PATH] https://nginx.org/packages/debian/ bullseye nginx" >> /etc/apt/sources.list.d/nginx.list \
+            echo "deb-src [signed-by=$NGINX_GPGKEY_PATH] https://nginx.org/packages/mainline/debian/ bookworm nginx" >> /etc/apt/sources.list.d/nginx.list \
             \
 # new directory for storing sources and .deb files
             && tempDir="$(mktemp -d)" \
@@ -104,7 +104,7 @@ RUN set -x \
 
 
 # Set the working directory to /var/www/html
-WORKDIR /var/www/html
+WORKDIR /var/www/
 
 
 
@@ -161,10 +161,11 @@ RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/
     echo "    ChrootDirectory /var/www/" >> /etc/ssh/sshd_config && \
     echo "    X11Forwarding no" >> /etc/ssh/sshd_config && \
     echo "    AllowTcpForwarding no" >> /etc/ssh/sshd_config && \
-    echo "    ForceCommand internal-sftp" >> /etc/ssh/sshd_config  && \
-    echo "Match User sshuser" >> /etc/ssh/sshd_config && \
-    echo "    X11Forwarding no" >> /etc/ssh/sshd_config && \
-    echo "    AllowTcpForwarding no" >> /etc/ssh/sshd_config
+    echo "    ForceCommand internal-sftp" >> /etc/ssh/sshd_config
+
+RUN groupadd sshgroup && useradd -ms /bin/bash -g sshgroup sshuser
+RUN mkdir -p /home/sshuser/.ssh
+
 
 RUN mkdir -p /var/run/sshd && \
     echo "mkdir -p /var/run/sshd" >> /etc/rc.local
@@ -174,14 +175,14 @@ RUN mkdir -p /var/run/sshd && \
 
 # Set permissions for wp-content folder
 RUN \
-	chown -R www-data:www-data /var/www/html/wp-content ;\
-	chmod -R 777 /var/www/html/wp-content
-RUN chmod -R g+rwx /var/www/html/wp-content
+	chown -R www-data:www-data /var/www/html/ ;\
+	chmod -R 777 /var/www/html/
+RUN chmod -R g+rwx /var/www/html/
 
 # Copy the Nginx configuration file into the container at /etc/nginx/nginx.conf
 COPY nginx.conf /etc/nginx/nginx.conf
 # Add wordpress config and database env
-COPY --chown=www-data:www-data wp-config.php /var/www/html/wp-config.php
+COPY --chown=www-data:www-data wp-config.php /usr/src/wordpress/wp-config.php
 ENV WORDPRESS_DB_USER=root
 ENV WORDPRESS_DB_NAME=test_db
 # Add wordpress entrypoint
@@ -191,7 +192,6 @@ RUN chmod +x /usr/local/docker-entrypoint.sh
 COPY php-fpm.sh /usr/local/php-fpm.sh
 RUN chmod +x /usr/local/php-fpm.sh
 
-VOLUME /var/www/html
 # Expose port 80 for Nginx
 EXPOSE 80
 # Expose the SFTP server port

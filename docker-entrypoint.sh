@@ -10,6 +10,7 @@ sourceTarArgs=(
 targetTarArgs=(
   --extract
   --file -
+  --directory /var/www/html
 )
 
 #Remove akismet plugin
@@ -45,8 +46,13 @@ for contentPath in \
     sourceTarArgs+=( --exclude "./$contentPath" )
   fi
 done
-tar "${sourceTarArgs[@]}" . | tar "${targetTarArgs[@]}"
-echo >&2 "Complete! WordPress has been successfully copied to $PWD"
+if [ -d "/var/www/html/wp-admin" ]; then
+    echo "Wordpress already there skipping..."
+else
+    tar "${sourceTarArgs[@]}" . | tar "${targetTarArgs[@]}"
+    echo >&2 "Complete! WordPress has been successfully copied to $PWD"
+fi
+
 
 
 # Add a new user for SFTP access with key-based authentication
@@ -59,14 +65,6 @@ else
 fi
 chmod 700 /home/sftpuser/.ssh
 
-USERNAME="sshuser"
-if id "$USERNAME" &>/dev/null; then
-   echo "User $USERNAME already exists."
-else
-   useradd -m -d /home/sshuser -s /sbin/nologin sshuser
-   mkdir /home/sshuser/.ssh
-fi
-chmod 700 /home/sshuser/.ssh
 
 # Add the public key to the authorized keys file
 if [ -v PUBLIC_KEY ]; then
@@ -75,16 +73,18 @@ if [ -v PUBLIC_KEY ]; then
     chmod 600 /home/sftpuser/.ssh/authorized_keys
 
     echo "ssh-rsa $PUBLIC_KEY" > /home/sshuser/.ssh/authorized_keys
-    chown -R sshuser:sshuser /home/sshuser/.ssh
+    chown sshuser:sshgroup /home/sshuser/.ssh/authorized_keys
     chmod 600 /home/sshuser/.ssh/authorized_keys
 
     echo "Public key is: $PUBLIC_KEY"
 
     usermod -aG www-data sftpuser 
-    usermod -aG root sshuser
+    usermod -aG www-data sshuser 
+    
 
-    chmod -R g+rwx /var/www/html/wp-content
-    chown -R www-data:www-data /var/www/html/wp-content
+    chmod -R g+rwx /var/www/html/
+    chown -R www-data:www-data /var/www/html/
+    
 else
     echo "PUBLIC_KEY is not defined."
 fi

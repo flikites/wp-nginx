@@ -116,9 +116,11 @@ define( 'WP_DEBUG', !!getenv_docker('WORDPRESS_DEBUG', '') );
 // Check DB connection
 $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
 $is_slave = true;
-if ($mysqli->connect_errno) {
+if ($mysqli->connect_errno) {// this is a slave node
   //Disable cron on slave nodes
   define('DISABLE_WP_CRON',true);
+  //Disable WP_AUTO_UPDATE_CORE on slave nodes
+  define( 'WP_AUTO_UPDATE_CORE', false );
 } else {
   $is_slave = false;
   $mysqli->close();
@@ -152,7 +154,6 @@ if ($configExtra = getenv_docker('WORDPRESS_CONFIG_EXTRA', '')) {
 	// eval($configExtra);
 }
 
-define( 'WP_AUTO_UPDATE_CORE', false );
 define( 'WP_MEMORY_LIMIT', '1024M' );
 
 # define( 'WP_DEBUG', true);
