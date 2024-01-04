@@ -16,4 +16,7 @@ while true; do
     # Kill the process
     pid=$(cat $pidfile)
     kill $pid
+    # reset wp folder permissions
+    chmod -R g+rwx /var/www/html/
+    chown -R www-data:www-data /var/www/html/
 done
