@@ -119,10 +119,10 @@ RUN set -eux; \
 	} > /usr/local/etc/php/conf.d/opcache-recommended.ini
 # PHP upload size
 RUN { \
-    echo 'upload_max_filesize = 256M'; \
-    echo 'post_max_size = 256M'; \
-    echo 'memory_limit = 256M'; \
-    echo 'max_execution_time=300s'; \
+    echo 'upload_max_filesize = 512M'; \
+    echo 'post_max_size = 512M'; \
+    echo 'memory_limit = 512M'; \
+    echo 'max_execution_time=600s'; \
 	} > /usr/local/etc/php/conf.d/extra.ini
 
   # PHP-FPM configs
@@ -132,7 +132,7 @@ RUN { \
     echo 'emergency_restart_interval=1m'; \
     echo 'process_control_timeout=5s'; \
     echo '[www]'; \
-    echo 'request_terminate_timeout=300s'; \
+    echo 'request_terminate_timeout=600s'; \
 	} > /usr/local/etc/php-fpm.d/zzz-extra.conf
 
 # Install OpenSSH server and SFTP server
