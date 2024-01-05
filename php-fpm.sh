@@ -7,12 +7,12 @@ sleep 10
 # Kill the process
 pid=$(cat $pidfile)
 kill $pid
-# start the loop that restarts php-fpm each 20 minutes
+# loop that resests php-fpm and folder permissions each 30 minutes
 while true; do
     # Start the process
     php-fpm -g $pidfile &
-    # Wait for 20 minutes
-    sleep 1200
+    # Wait for 30 minutes
+    sleep 1800
     # Kill the process
     pid=$(cat $pidfile)
     kill $pid
