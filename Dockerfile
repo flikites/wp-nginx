@@ -182,8 +182,9 @@ RUN chmod -R g+rwx /var/www/html/
 COPY nginx.conf /etc/nginx/nginx.conf
 # Add wordpress config and database env
 COPY --chown=www-data:www-data wp-config.php /usr/src/wordpress/wp-config.php
-ENV WORDPRESS_DB_USER=root
-ENV WORDPRESS_DB_NAME=test_db
+# ENV WORDPRESS_DB_USER=root
+# ENV WORDPRESS_DB_NAME=test_db
+
 # Add wordpress entrypoint
 COPY docker-entrypoint.sh /usr/local/docker-entrypoint.sh
 RUN chmod +x /usr/local/docker-entrypoint.sh
