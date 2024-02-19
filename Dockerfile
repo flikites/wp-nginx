@@ -141,6 +141,14 @@ RUN { \
    apt-get clean && \
    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+# Install MySQL client
+RUN apt-get update && apt-get install -y default-mysql-client
+
+# Install WP-CLI
+RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
+    && chmod +x wp-cli.phar \
+    && mv wp-cli.phar /usr/local/bin/wp
+
 # Configure SSH server for SFTP and key-based authentication
 #RUN mkdir /var/run/sshd \
 #    && sed -i 's/^#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config \

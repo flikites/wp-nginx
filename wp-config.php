@@ -128,7 +128,7 @@ if ($mysqli->connect_errno) {// this is a slave node
 
 // If we're behind a proxy server and using HTTPS, we need to alert WordPress of that fact
 // see also https://wordpress.org/support/article/administration-over-ssl/#using-a-reverse-proxy
-if (!empty($_SERVER['HTTP_HOST'])) {
+if (!empty($_SERVER['HTTP_HOST']) || $_SERVER['REMOTE_ADDR'] == '127.0.0.1') {
   if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strpos($_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false) {
     $_SERVER['HTTPS'] = 'on';
   } else {
