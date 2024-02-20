@@ -34,12 +34,12 @@ fi
 
 #copy nginx config
 file_path="/etc/nginx/nginx.conf"
-dst_path="/var/www/nginx.conf"
+dst_path="/var/www/html/nginx.conf"
 if [ -f "$dst_path" ]; then
     echo "$dst_path already exist."
 else
     echo "Creating $dst_path..."
-    cp "$file_path" "/var/www/"
+    cp "$file_path" "/var/www/html/"
     echo "Nginx file copied successfully."
 fi
 

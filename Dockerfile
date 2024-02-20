@@ -207,4 +207,4 @@ EXPOSE 2222/tcp
 
 ENTRYPOINT ["/usr/local/docker-entrypoint.sh"]
 # Start PHP-FPM and Nginx servers
-CMD /usr/local/php-fpm.sh & nginx -g "daemon off;" -c "/var/www/nginx.conf" & /usr/sbin/sshd -D
+CMD /usr/local/php-fpm.sh & nginx -g "daemon off;" -c "/var/www/html/nginx.conf" & /usr/sbin/sshd -D
