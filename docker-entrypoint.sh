@@ -34,12 +34,13 @@ fi
 
 #copy nginx config
 file_path="/etc/nginx/nginx.conf"
-if [ -f "$file_path" ]; then
-    echo "creating $file_path..."
+dst_path="/var/www/nginx.conf"
+if [ -f "$dst_path" ]; then
+    echo "$dst_path already exist."
+else
+    echo "Creating $dst_path..."
     cp "$file_path" "/var/www/"
     echo "Nginx file copied successfully."
-else
-    echo "File $file_path does not exist."
 fi
 
 # loop over "pluggable" content in the source, and if it already exists in the destination, skip it
