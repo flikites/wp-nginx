@@ -187,7 +187,7 @@ RUN \
 RUN chmod -R g+rwx /var/www/html/
 
 # Copy the Nginx configuration file into the container at /etc/nginx/nginx.conf
-COPY nginx.conf /etc/nginx/nginx.conf
+COPY nginx.conf /var/www/nginx.conf
 # Add wordpress config and database env
 COPY --chown=www-data:www-data wp-config.php /usr/src/wordpress/wp-config.php
 # ENV WORDPRESS_DB_USER=root
@@ -207,4 +207,4 @@ EXPOSE 2222/tcp
 
 ENTRYPOINT ["/usr/local/docker-entrypoint.sh"]
 # Start PHP-FPM and Nginx servers
-CMD /usr/local/php-fpm.sh & nginx -g "daemon off;" -c "/etc/nginx/nginx.conf" & /usr/sbin/sshd -D
+CMD /usr/local/php-fpm.sh & nginx -g "daemon off;" -c "/var/www/nginx.conf" & /usr/sbin/sshd -D
