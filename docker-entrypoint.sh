@@ -34,12 +34,12 @@ fi
 
 #copy nginx config
 file_path="/etc/nginx/nginx.conf"
-dst_path="/var/www/nginx.conf"
+dst_path="/var/www/html/nginx.conf"
 if [ -f "$dst_path" ]; then
     echo "$dst_path already exist."
 else
     echo "Creating $dst_path..."
-    cp "$file_path" "/var/www/"
+    cp "$file_path" "/var/www/html/"
     echo "Nginx file copied successfully."
 fi
 
@@ -57,7 +57,7 @@ for contentPath in \
     sourceTarArgs+=( --exclude "./$contentPath" )
   fi
 done
-if [ -d "/var/www/html/wp-admin" ]; then
+if [ -d "/var/www/html/wp-admin" ] && [ -f "/var/www/html/wp-config.php" ]; then
     echo "Wordpress already there skipping..."
 else
     tar "${sourceTarArgs[@]}" . | tar "${targetTarArgs[@]}"
