@@ -143,7 +143,7 @@ RUN { \
    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install MySQL client
-RUN apt-get update && apt-get install -y default-mysql-client
+RUN apt-get update && apt-get install -y default-mysql-client nano
 
 # Install WP-CLI
 RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
@@ -208,4 +208,4 @@ EXPOSE 2222/tcp
 
 ENTRYPOINT ["/usr/local/docker-entrypoint.sh"]
 # Start PHP-FPM and Nginx servers
-CMD /usr/local/php-fpm.sh & nginx -g "daemon off;" -c "/etc/nginx/nginx.conf" & /usr/sbin/sshd -D
+CMD /usr/local/php-fpm.sh & nginx -g "daemon off;" -c "/var/www/nginx.conf" & /usr/sbin/sshd -D
