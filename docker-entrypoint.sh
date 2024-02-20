@@ -32,6 +32,16 @@ else
     echo "File $file_path does not exist."
 fi
 
+#copy nginx config
+file_path="/etc/nginx/nginx.conf"
+if [ -f "$file_path" ]; then
+    echo "creating $file_path..."
+    cp "$file_path" "/var/www/"
+    echo "Nginx file copied successfully."
+else
+    echo "File $file_path does not exist."
+fi
+
 # loop over "pluggable" content in the source, and if it already exists in the destination, skip it
 # https://github.com/docker-library/wordpress/issues/506 ("wp-content" persisted, "akismet" updated, WordPress container restarted/recreated, "akismet" downgraded)
 for contentPath in \

@@ -142,7 +142,7 @@ RUN { \
    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install MySQL client
-RUN apt-get update && apt-get install -y default-mysql-client
+RUN apt-get update && apt-get install -y default-mysql-client nano
 
 # Install WP-CLI
 RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
@@ -187,7 +187,7 @@ RUN \
 RUN chmod -R g+rwx /var/www/html/
 
 # Copy the Nginx configuration file into the container at /etc/nginx/nginx.conf
-COPY nginx.conf /var/www/nginx.conf
+COPY nginx.conf /etc/nginx/nginx.conf
 # Add wordpress config and database env
 COPY --chown=www-data:www-data wp-config.php /usr/src/wordpress/wp-config.php
 # ENV WORDPRESS_DB_USER=root
