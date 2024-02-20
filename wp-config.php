@@ -27,13 +27,13 @@ define( 'WP_CACHE', true );
 // (it gets parsed by the upstream wizard in https://github.com/WordPress/WordPress/blob/f27cb65e1ef25d11b535695a660e7282b98eb742/wp-admin/setup-config.php#L356-L392)
 
 // a helper function to lookup "env_FILE", "env", then fallback
-if (!function_exists('getenv_docker')) {
+if ( !function_exists('getenv_docker') ) {
 	// https://github.com/docker-library/wordpress/issues/588 (WP-CLI will load this file 2x)
-	function getenv_docker($env, $default) {
-		if ($fileEnv = getenv($env . '_FILE')) {
-			return rtrim(file_get_contents($fileEnv), "\r\n");
+	function getenv_docker( $env, $default ) {
+		if ( $fileEnv = getenv( $env . '_FILE') ) {
+			return rtrim( file_get_contents( $fileEnv ), "\r\n" );
 		}
-		else if (($val = getenv($env)) !== false) {
+		else if ( ( $val = getenv( $env ) ) !== false ) {
 			return $val;
 		}
 		else {
@@ -44,13 +44,13 @@ if (!function_exists('getenv_docker')) {
 
 // ** Database settings - You can get this info from your web host ** //
 /** The name of the database for WordPress */
-define( 'DB_NAME', getenv_docker('WORDPRESS_DB_NAME', 'test_db') );
+define( 'DB_NAME', getenv_docker('WORDPRESS_DB_NAME', '') );
 
 /** Database username */
-define( 'DB_USER', getenv_docker('WORDPRESS_DB_USER', 'root') );
+define( 'DB_USER', getenv_docker('WORDPRESS_DB_USER', '') );
 
 /** Database password */
-define( 'DB_PASSWORD', getenv_docker('WORDPRESS_DB_PASSWORD', '123secret') );
+define( 'DB_PASSWORD', getenv_docker('WORDPRESS_DB_PASSWORD', '') );
 
 /**
  * Docker image fallback values above are sourced from the official WordPress installation wizard:
@@ -59,7 +59,7 @@ define( 'DB_PASSWORD', getenv_docker('WORDPRESS_DB_PASSWORD', '123secret') );
  */
 
 /** Database hostname */
-define( 'DB_HOST', getenv_docker('WORDPRESS_DB_HOST', 'mysql') );
+define( 'DB_HOST', getenv_docker('WORDPRESS_DB_HOST', '') );
 
 /** Database charset to use in creating database tables. */
 define( 'DB_CHARSET', getenv_docker('WORDPRESS_DB_CHARSET', 'utf8') );
@@ -116,9 +116,9 @@ define( 'WP_DEBUG', !!getenv_docker('WORDPRESS_DEBUG', '') );
 // Check DB connection
 $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
 $is_slave = true;
-if ($mysqli->connect_errno) {// this is a slave node
+if ( $mysqli->connect_errno ) {// this is a slave node
   //Disable cron on slave nodes
-  define('DISABLE_WP_CRON',true);
+  define( 'DISABLE_WP_CRON' , true );
   //Disable WP_AUTO_UPDATE_CORE on slave nodes
   define( 'WP_AUTO_UPDATE_CORE', false );
 } else {
@@ -128,8 +128,8 @@ if ($mysqli->connect_errno) {// this is a slave node
 
 // If we're behind a proxy server and using HTTPS, we need to alert WordPress of that fact
 // see also https://wordpress.org/support/article/administration-over-ssl/#using-a-reverse-proxy
-if (!empty($_SERVER['HTTP_HOST']) || $_SERVER['REMOTE_ADDR'] == '127.0.0.1') {
-  if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strpos($_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false) {
+if ( !empty( $_SERVER['HTTP_HOST'] ) || $_SERVER['REMOTE_ADDR'] === '127.0.0.1' ) {
+  if ( isset( $_SERVER['HTTP_X_FORWARDED_PROTO'] ) && strpos( $_SERVER['HTTP_X_FORWARDED_PROTO'], 'https' ) !== false ) {
     $_SERVER['HTTPS'] = 'on';
   } else {
     define( 'WP_HOME', 'http://' . $_SERVER['HTTP_HOST'] . '/' );
@@ -137,7 +137,7 @@ if (!empty($_SERVER['HTTP_HOST']) || $_SERVER['REMOTE_ADDR'] == '127.0.0.1') {
   }
 } else {
     // request comming from FDM health check, check if node is slave
-    if ($is_slave) {
+    if ( $is_slave ) {
       header('HTTP/1.1 500 Internal Server Error');
       echo 'Database connection failed';
       exit(0);
@@ -148,9 +148,7 @@ if (!empty($_SERVER['HTTP_HOST']) || $_SERVER['REMOTE_ADDR'] == '127.0.0.1') {
     }
 }
 
-// (we include this by default because reverse proxying is extremely common in container environments)
-
-if ($configExtra = getenv_docker('WORDPRESS_CONFIG_EXTRA', '')) {
+if ( $configExtra = getenv_docker('WORDPRESS_CONFIG_EXTRA', '') ) {
 	// eval($configExtra);
 }
 
