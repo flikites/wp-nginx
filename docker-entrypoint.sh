@@ -57,7 +57,7 @@ for contentPath in \
     sourceTarArgs+=( --exclude "./$contentPath" )
   fi
 done
-if [ -d "/var/www/html/wp-admin" ] && [ -f "/var/www/html/wp-config.php" ]; then
+if [ -d "/var/www/html/wp-admin" ] && [ -f "/var/www/html/wp-config.php" ] && [ -f "/var/www/html/index.php" ]; then
     echo "Wordpress already there skipping..."
 else
     tar "${sourceTarArgs[@]}" . | tar "${targetTarArgs[@]}"
