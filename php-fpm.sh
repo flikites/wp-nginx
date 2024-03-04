@@ -17,8 +17,8 @@ while true; do
     chmod -R g+rwx /var/www/html/
     chown -R www-data:www-data /var/www/html/
     echo "Reseted Permissions."
-    # Wait for 30 minutes
-    sleep 5
+    # Wait for 5 minutes
+    sleep 300
     # Kill the process
     #pid=$(cat $pidfile)
     #kill $pid
