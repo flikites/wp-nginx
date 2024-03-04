@@ -143,7 +143,6 @@ if ( !empty( $_SERVER['HTTP_HOST'] ) || $_SERVER['REMOTE_ADDR'] === '127.0.0.1' 
       exit(0);
     } else {
       echo 'OK';
-      $mysqli->close();
       exit(0);
     }
 }
