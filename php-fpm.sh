@@ -6,20 +6,20 @@ php-fpm -g $pidfile &
 sleep 5
 # Kill the process
 pid=$(cat $pidfile)
-kill $pid
+#kill $pid
 sleep 5
 # loop that resests php-fpm and folder permissions each 30 minutes
 while true; do
 
     # Start the process
-    php-fpm -g $pidfile &
+    #php-fpm -g $pidfile &
     # reset wp folder permissions
     chmod -R g+rwx /var/www/html/
     chown -R www-data:www-data /var/www/html/
     echo "Reseted Permissions."
     # Wait for 30 minutes
-    sleep 1800
+    sleep 5
     # Kill the process
-    pid=$(cat $pidfile)
-    kill $pid
+    #pid=$(cat $pidfile)
+    #kill $pid
 done
