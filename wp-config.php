@@ -114,16 +114,24 @@ define( 'WP_DEBUG', !!getenv_docker('WORDPRESS_DEBUG', '') );
 /* Add any custom values between this line and the "stop editing" line. */
 
 // Check DB connection
-$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
 $is_slave = true;
-if ( $mysqli->connect_errno ) {// this is a slave node
+try {
+  $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
+  if ( $mysqli->connect_errno ) {// this is a slave node
+    //Disable cron on slave nodes
+    define( 'DISABLE_WP_CRON' , true );
+    //Disable WP_AUTO_UPDATE_CORE on slave nodes
+    define( 'WP_AUTO_UPDATE_CORE', false );
+  } else {
+    $is_slave = false;
+    $mysqli->close();
+  }
+}
+catch(Exception $e) {
   //Disable cron on slave nodes
   define( 'DISABLE_WP_CRON' , true );
   //Disable WP_AUTO_UPDATE_CORE on slave nodes
   define( 'WP_AUTO_UPDATE_CORE', false );
-} else {
-  $is_slave = false;
-  $mysqli->close();
 }
 
 // If we're behind a proxy server and using HTTPS, we need to alert WordPress of that fact
@@ -132,8 +140,8 @@ if ( !empty( $_SERVER['HTTP_HOST'] ) || $_SERVER['REMOTE_ADDR'] === '127.0.0.1' 
   if ( isset( $_SERVER['HTTP_X_FORWARDED_PROTO'] ) && strpos( $_SERVER['HTTP_X_FORWARDED_PROTO'], 'https' ) !== false ) {
     $_SERVER['HTTPS'] = 'on';
   } else {
-    define( 'WP_HOME', 'http://' . $_SERVER['HTTP_HOST'] . '/' );
-    define( 'WP_SITEURL', 'http://' . $_SERVER['HTTP_HOST'] . '/' );
+    // define( 'WP_HOME', 'http://' . $_SERVER['HTTP_HOST'] . '/' );
+    // define( 'WP_SITEURL', 'http://' . $_SERVER['HTTP_HOST'] . '/' );
   }
 } else {
     // request comming from FDM health check, check if node is slave
@@ -143,7 +151,6 @@ if ( !empty( $_SERVER['HTTP_HOST'] ) || $_SERVER['REMOTE_ADDR'] === '127.0.0.1' 
       exit(0);
     } else {
       echo 'OK';
-      $mysqli->close();
       exit(0);
     }
 }
