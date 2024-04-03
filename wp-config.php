@@ -123,6 +123,7 @@ try {
     //Disable WP_AUTO_UPDATE_CORE on slave nodes
     define( 'WP_AUTO_UPDATE_CORE', false );
   } else {
+    define( 'WP_AUTO_UPDATE_CORE', 'minor' );
     $is_slave = false;
     $mysqli->close();
   }
