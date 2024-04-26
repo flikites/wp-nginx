@@ -135,8 +135,8 @@ catch(Exception $e) {
   define( 'WP_AUTO_UPDATE_CORE', false );
 }
 if ( $is_slave ) {
-  header('HTTP/1.1 500 Internal Server Error');
-  echo 'This node is not active';
+  header('HTTP/1.1 503 Service Unavailable');
+  echo 'Standby node. Runs on <a href="https://runonflux.io">Flux</a>';
   exit(0);
 } 
 // If we're behind a proxy server and using HTTPS, we need to alert WordPress of that fact
