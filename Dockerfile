@@ -150,14 +150,8 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
     && chmod +x wp-cli.phar \
     && mv wp-cli.phar /usr/local/bin/wp
 
-# Configure SSH server for SFTP and key-based authentication
-#RUN mkdir /var/run/sshd \
-#    && sed -i 's/^#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config \
-#    && sed -i 's/#Port 22/Port 2222/' /etc/ssh/sshd_config \
-#    && sed -i 's/#AuthorizedKeysFile/AuthorizedKeysFile/' /etc/ssh/sshd_config \
-#    && sed -i 's/^Subsystem\s\+sftp\s\+\/usr\/lib\/openssh\/sftp-server/Subsystem sftp internal-sftp/' /etc/ssh/sshd_config \
-#    && echo 'Match User sftpuser\nChrootDirectory /var/www/%u\nForceCommand internal-sftp\nX11Forwarding no\nAllowTcpForwarding no' >> /etc/ssh/sshd_config
-
+# Install Redis server package
+RUN apt-get install -y redis-server
 
 #Configure SSH server
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
@@ -208,4 +202,4 @@ EXPOSE 2222/tcp
 
 ENTRYPOINT ["/usr/local/docker-entrypoint.sh"]
 # Start PHP-FPM and Nginx servers
-CMD /usr/local/php-fpm.sh & nginx -g "daemon off;" -c "/var/www/html/nginx.conf" & /usr/sbin/sshd -D
+CMD /usr/local/php-fpm.sh & nginx -g "daemon off;" -c "/var/www/html/nginx.conf" & /usr/sbin/sshd -D & redis-server

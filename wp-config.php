@@ -134,7 +134,11 @@ catch(Exception $e) {
   //Disable WP_AUTO_UPDATE_CORE on slave nodes
   define( 'WP_AUTO_UPDATE_CORE', false );
 }
-
+if ( $is_slave ) {
+  header('HTTP/1.1 503 Service Unavailable');
+  echo 'Standby node. Runs on <a href="https://runonflux.io">Flux</a>';
+  exit(0);
+} 
 // If we're behind a proxy server and using HTTPS, we need to alert WordPress of that fact
 // see also https://wordpress.org/support/article/administration-over-ssl/#using-a-reverse-proxy
 if ( !empty( $_SERVER['HTTP_HOST'] ) || $_SERVER['REMOTE_ADDR'] === '127.0.0.1' ) {
