@@ -153,6 +153,10 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
 # Install Redis server package
 RUN apt-get install -y redis-server
 
+# Install php-redis extension
+RUN pecl install redis \
+&& docker-php-ext-enable redis
+
 #Configure SSH server
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
     sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config && \
