@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+# Load the .env file
+if [ -f /var/www/html/.env ]; then
+    export $(grep -v '^#' /var/www/html/.env | xargs)
+else
+    echo ".env file not found"
+fi
+
 set -Eeuo pipefail
 
 sourceTarArgs=(
